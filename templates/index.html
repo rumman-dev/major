@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Disaster Image Classifier</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f4f4f4;
+            flex-direction: column; /* Stack elements vertically */
+        }
+        .container {
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        input[type="file"] {
+            border: 1px solid #ccc;
+            display: inline-block;
+            padding: 6px 12px;
+            cursor: pointer;
+            margin-bottom: 15px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 25px;
+            padding: 15px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            border: 1px solid #ced4da;
+        }
+        .result h2 {
+            margin-top: 0;
+            color: #495057;
+        }
+        .result p {
+            font-size: 1.2em;
+            color: #212529;
+            font-weight: bold;
+        }
+        .flash-messages {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 15px;
+        }
+        .flash-messages li {
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+        .flash-messages .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+         .flash-messages .success { /* Add if you use success flashes */
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Disaster Image Classifier</h1>
+
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <ul class=flash-messages>
+            {% for category, message in messages %}
+              <li class="{{ category if category else 'info' }}">{{ message }}</li>
+            {% endfor %}
+            </ul>
+          {% endif %}
+        {% endwith %}
+
+        <form method="post" enctype="multipart/form-data">
+            <label for="file">Choose an image to upload:</label><br>
+            <input type="file" id="file" name="file" accept="image/png, image/jpeg, image/jpg" required><br>
+            <button type="submit">Predict Disaster Type</button>
+        </form>
+
+        {% if prediction %}
+            <div class="result">
+                <h2>Prediction Result</h2>
+                <p>Predicted Class: {{ prediction }}</p>
+                <p>Confidence: {{ confidence }}</p>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>
