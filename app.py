@@ -3,15 +3,17 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torchvision import transforms
 from PIL import Image
-import streamlit as st
 import io
+import os
+import streamlit as st
+import time
 
 # --- Configuration ---
 NUM_CLASSES = 3
 CLASS_NAMES = ['Cyclone', 'Flood', 'Wildfire']
 MODEL_PATH = 'best_student_model.pth'
 
-# --- Define the StudentCNN model ---
+# --- StudentCNN Model ---
 class StudentCNN(nn.Module):
     def __init__(self, num_classes=NUM_CLASSES):
         super(StudentCNN, self).__init__()
@@ -36,34 +38,41 @@ class StudentCNN(nn.Module):
 # --- Load Model ---
 device = torch.device("cpu")
 model = StudentCNN(num_classes=NUM_CLASSES)
-model.load_state_dict(torch.load(MODEL_PATH, map_location=device))
-model.to(device)
-model.eval()
+
+try:
+    model.load_state_dict(torch.load(MODEL_PATH, map_location=device))
+    model.to(device)
+    model.eval()
+except Exception as e:
+    st.error(f"❌ Failed to load model: {e}")
+    st.stop()
 
 # --- Image Transformations ---
 inference_transform = transforms.Compose([
     transforms.Resize(256),
     transforms.CenterCrop(224),
     transforms.ToTensor(),
-    transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+    transforms.Normalize([0.485, 0.456, 0.406],
+                         [0.229, 0.224, 0.225])
 ])
 
-# --- Streamlit UI ---
-st.title("🌪️ Disaster Type Classifier")
-st.write("Upload an image (PNG/JPG/JPEG) of a **Cyclone**, **Flood**, or **Wildfire** for prediction.")
+# --- Streamlit App ---
+st.set_page_config(page_title="Disaster Classifier", layout="centered")
+st.title("🌪️ Disaster Classification using CNN")
+st.markdown("Upload an image of a disaster to classify it as **Cyclone**, **Flood**, or **Wildfire**.")
 
-uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
+uploaded_file = st.file_uploader("Choose an image", type=["png", "jpg", "jpeg"])
 
 if uploaded_file is not None:
     try:
-        # Show the uploaded image
         image = Image.open(uploaded_file).convert('RGB')
         st.image(image, caption='Uploaded Image', use_column_width=True)
 
-        # Preprocess the image
         input_tensor = inference_transform(image).unsqueeze(0).to(device)
 
-        # Predict
+        # Start timer
+        start_time = time.time()
+
         with torch.no_grad():
             output = model(input_tensor)
             probabilities = F.softmax(output, dim=1)[0]
@@ -71,7 +80,12 @@ if uploaded_file is not None:
             predicted_class = CLASS_NAMES[predicted_idx]
             confidence = probabilities[predicted_idx].item() * 100
 
+        # End timer
+        end_time = time.time()
+        response_time = end_time - start_time
+
         st.success(f"✅ Prediction: **{predicted_class}** with confidence **{confidence:.2f}%**")
+        st.info(f"🕒 Response Time: **{response_time:.4f} seconds**")
 
     except Exception as e:
         st.error(f"Error processing image: {e}")
