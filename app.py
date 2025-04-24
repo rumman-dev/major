@@ -132,7 +132,7 @@ def upload_and_predict():
     # Initial page load (GET request)
     return render_template('index.html', prediction=None, confidence=None)
 
-if __name__ == '__main__':
-    # Make sure the server is accessible from your network if needed (0.0.0.0)
-    # Use debug=True only for development, remove for production
-    app.run(host='0.0.0.0', port=5000, debug=True)
+# if __name__ == '__main__':
+#     # Make sure the server is accessible from your network if needed (0.0.0.0)
+#     # Use debug=True only for development, remove for production
+#     app.run(host='0.0.0.0', port=5000, debug=True)
